@@ -1,0 +1,99 @@
+<!-- Header -->
+<div class="filter-upload-container">
+  <!-- Filtering input field -->
+  <mat-form-field>
+    <mat-label>Search By Name...</mat-label>
+    <input matInput (keyup)="applyFilter($event)" placeholder="Search By Name...">
+  </mat-form-field>
+
+  <!-- Upload button -->
+  <button mat-raised-button class="centered-button" color="primary" (click)="fileInput.click()">
+    <span class="centered-text">Upload Patient Data</span>
+    <mat-icon class="upload-icon">cloud_upload</mat-icon>
+  </button>
+  <input type="file" #fileInput accept=".csv" style="display: none;" (change)="onFileSelected($event)" />
+</div>
+
+<!-- Table -->
+<div class="mat-elevation-z8">
+
+  <mat-table [dataSource]="dataSource" matSort matSortActive="firstName" matSortDirection="asc">
+    <!-- First Name Column -->
+    <ng-container matColumnDef="firstName">
+      <mat-header-cell *matHeaderCellDef mat-sort-header> First Name </mat-header-cell>
+      <mat-cell *matCellDef="let patient">
+        <ng-container *ngIf="!patient.editMode; else firstNameInput">
+          {{ patient.firstName }}
+        </ng-container>
+        <ng-template #firstNameInput>
+          <input [(ngModel)]="patient.firstName">
+        </ng-template>
+      </mat-cell>
+    </ng-container>
+
+    <!-- Last Name Column -->
+    <ng-container matColumnDef="lastName">
+      <mat-header-cell *matHeaderCellDef mat-sort-header> Last Name </mat-header-cell>
+      <mat-cell *matCellDef="let patient">
+        <ng-container *ngIf="!patient.editMode; else lastNameInput">
+          {{ patient.lastName }}
+        </ng-container>
+        <ng-template #lastNameInput>
+          <input [(ngModel)]="patient.lastName">
+        </ng-template>
+      </mat-cell>
+    </ng-container>
+
+    <!-- Birthday Column -->
+    <ng-container matColumnDef="birthday">
+      <mat-header-cell *matHeaderCellDef> Birthday </mat-header-cell>
+      <mat-cell *matCellDef="let patient">
+        <ng-container *ngIf="!patient.editMode; else birthdayEdit">
+          {{ patient.birthday | date }}
+        </ng-container>
+        <ng-template #birthdayEdit>
+          <mat-form-field>
+            <input matInput [matDatepicker]="picker" [(ngModel)]="patient.birthday">
+            <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+            <mat-datepicker #picker></mat-datepicker>
+          </mat-form-field>
+        </ng-template>
+      </mat-cell>
+    </ng-container>
+
+    <!-- Gender Column -->
+    <ng-container matColumnDef="gender">
+      <mat-header-cell *matHeaderCellDef> Gender </mat-header-cell>
+      <mat-cell *matCellDef="let patient">
+        <div *ngIf="!patient.editMode; else genderEdit">
+          {{ getGenderDisplayValue(patient.gender) }}
+        </div>
+        <ng-template #genderEdit>
+         <select *ngIf="patient.editMode" [ngModel]="patient.gender" (ngModelChange)="patient.gender = +$event">
+          <option *ngFor="let option of genderOptions" [value]="option.value">{{ option.viewValue }}</option>
+       </select>
+
+        </ng-template>
+      </mat-cell>
+    </ng-container>
+
+    <!-- Actions Column -->
+    <ng-container matColumnDef="actions">
+      <mat-header-cell *matHeaderCellDef> Actions </mat-header-cell>
+      <mat-cell *matCellDef="let patient">
+        <ng-container *ngIf="!patient.editMode; else editActions">
+          <button mat-button (click)="startEdit(patient)">Edit</button>
+        </ng-container>
+        <ng-template #editActions>
+          <button mat-button class="save-button"  (click)="saveEdit(patient)">Save</button>
+          <button mat-button (click)="discardEdit(patient)">Discard</button>
+        </ng-template>
+      </mat-cell>
+    </ng-container>
+
+    <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+    <mat-row *matRowDef="let row; columns: displayedColumns;"></mat-row>
+  </mat-table>
+
+  <mat-paginator [pageSizeOptions]="[20, 50, 100]" showFirstLastButtons></mat-paginator>
+</div>
